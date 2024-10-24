@@ -1,9 +1,4 @@
-        // Configuration Variables
-function file_get_contents(filename) {
-    fetch(filename).then((resp) => resp.text()).then(function(data) {
-        return data;
-    });
-}
+
         const USE_WIKIPEDIA = true;
         const USE_DUCKDUCKGO = true;
         const USE_GDELT = true; // News API
