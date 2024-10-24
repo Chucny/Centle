@@ -1,0 +1,79 @@
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+            margin-top: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        a {
+            text-decoration: none;
+            color: grey;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        #centleLogo {
+            font-family: 'Arial', sans-serif;
+            font-size: 24px;
+            display: inline-block;
+        }
+        #centleLogo span.C {
+            color: #007bff; /* blue */
+        }
+        #centleLogo span.e1 {
+            color: #ea4335; /* red */
+        }
+        #centleLogo span.n {
+            color: #fbbc05; /* yellow */
+        }
+        #centleLogo span.t {
+            color: #34a853; /* light green */
+        }
+        #centleLogo span.l {
+            color: #ea4335; /* red */
+        }
+        #centleLogo span.e2 {
+            color: #007bff; /* blue */
+        }
