@@ -1,0 +1,5 @@
+#!/bin/bash
+echo This bash file will download Centle Search for you.
+echo Downloading Centle Search...
+git clone https://www.github.com/Chucny/Centle
+echo Centle Search has now been installed. You can now close this window.
