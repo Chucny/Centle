@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Copyright 2024 Chucny (GitHub)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centle Search</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+            margin-top: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        a {
+            text-decoration: none;
+            color: grey;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        #centleLogo {
+            font-family: 'Arial', sans-serif;
+            font-size: 24px;
+            display: inline-block;
+        }
+        #centleLogo span.C {
+            color: #007bff; /* blue */
+        }
+        #centleLogo span.e1 {
+            color: #ea4335; /* red */
+        }
+        #centleLogo span.n {
+            color: #fbbc05; /* yellow */
+        }
+        #centleLogo span.t {
+            color: #34a853; /* light green */
+        }
+        #centleLogo span.l {
+            color: #ea4335; /* red */
+        }
+        #centleLogo span.e2 {
+            color: #007bff; /* blue */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="centleLogo">
+            <span class="C">C</span>
+            <span class="e1">e</span>
+            <span class="n">n</span>
+            <span class="t">t</span>
+            <span class="l">l</span>
+            <span class="e2">e</span>
+        </div><br><br>
+        <input type="text" id="searchInput" placeholder="Search..." onkeydown="if (event.keyCode === 13) { search(); }">
+        <button onclick="search()">Search</button>
+        <ul id="searchResults"></ul>
+    </div>
+    <script>
+        // Configuration Variables
+        const USE_WIKIPEDIA = true;
+        const USE_DUCKDUCKGO = true;
+        const USE_GDELT = true; // News API
+        const USE_OPENLIBRARY = true; // Books API
+        const USE_WIKIDATA = false; // Structured Data API
+        const USE_DBPEDIA = false; // Entity Linking API
+
+        async function search() {
+            const searchResults = document.getElementById("searchResults");
+            searchResults.innerHTML = "";
+
+            const query = document.getElementById("searchInput").value;
+
+            if (query) {
+                // Wikipedia API Integration
+                if (USE_WIKIPEDIA) {
+                    try {
+                        const wikipediaResponse = await fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=10&namespace=0&format=json&origin=*`);
+                        const wikipediaData = await wikipediaResponse.json();
+                        const [searchTerm, titles, descriptions, links] = wikipediaData;
+
+                        if (titles.length > 0) {
+                            for (let i = 0; i < titles.length; i++) {
+                                const li = document.createElement("li");
+                                const link = document.createElement("a");
+                                link.href = links[i];
+                                link.textContent = titles[i];
+                                li.appendChild(link);
+
+                                const metaDescription = await fetchMetaDescription(links[i]);
+                                const desc = document.createElement("p");
+                                desc.textContent = metaDescription || descriptions[i];
+                                li.appendChild(desc);
+
+                                searchResults.appendChild(li);
+                            }
+                        } else {
+                            const li = document.createElement("li");
+                            li.textContent = "No Wikipedia results found.";
+                            searchResults.appendChild(li);
+                        }
+                    } catch (error) {
+                        console.error("Error fetching Wikipedia results:", error);
+                        const li = document.createElement("li");
+                        li.textContent = "Error fetching Wikipedia results.";
+                        searchResults.appendChild(li);
+                    }
+                }
+
+                // DuckDuckGo API Integration
+                if (USE_DUCKDUCKGO) {
+                    try {
+                        const duckduckgoResponse = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`);
+                        const duckduckgoData = await duckduckgoResponse.json();
+
+                        if (duckduckgoData.RelatedTopics && duckduckgoData.RelatedTopics.length > 0) {
+                            duckduckgoData.RelatedTopics.forEach(topic => {
+                                if (topic.FirstURL && topic.Text) {
+                                    const li = document.createElement("li");
+                                    const link = document.createElement("a");
+                                    link.href = topic.FirstURL;
+                                    link.textContent = topic.Text;
+                                    li.appendChild(link);
+                                    searchResults.appendChild(li);
+                                }
+                            });
+                        } else {
+                            const li = document.createElement("li");
+                            li.textContent = "No DuckDuckGo results found.";
+                            searchResults.appendChild(li);
+                        }
+                    } catch (error) {
+                        console.error("Error fetching DuckDuckGo results:", error);
+                        const li = document.createElement("li");
+                        li.textContent = "Error fetching DuckDuckGo results.";
+                        searchResults.appendChild(li);
+                    }
+                }
+
+                // Other APIs
+                if (USE_GDELT) {
+                    try {
+                        const gdeltResponse = await fetch(`https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent(query)}&mode=artlist&maxrecords=10&format=json`);
+                        const gdeltData = await gdeltResponse.json();
+
+                        if (gdeltData.articles && gdeltData.articles.length > 0) {
+                            gdeltData.articles.forEach(article => {
+                                const li = document.createElement("li");
+                                const link = document.createElement("a");
+                                link.href = article.url;
+                                link.textContent = article.title;
+                                li.appendChild(link);
+                                const desc = document.createElement("p");
+                                desc.textContent = article.description;
+                                li.appendChild(desc);
+                                searchResults.appendChild(li);
+                            });
+                        } else {
+                            const li = document.createElement("li");
+                            li.textContent = "No news results found.";
+                            searchResults.appendChild(li);
+                        }
+                    } catch (error) {
+                        console.error("Error fetching GDELT results:", error);
+                        const li = document.createElement("li");
+                        li.textContent = "Error fetching GDELT results.";
+                        searchResults.appendChild(li);
+                    }
+                }
+
+                if (USE_OPENLIBRARY) {
+                    try {
+                        const openlibraryResponse = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}`);
+                        const openlibraryData = await openlibraryResponse.json();
+
+                        if (openlibraryData.docs && openlibraryData.docs.length > 0) {
+                            openlibraryData.docs.forEach(book => {
+                                const li = document.createElement("li");
+                                const link = document.createElement("a");
+                                link.href = `https://openlibrary.org${book.key}`;
+                                link.textContent = book.title;
+                                li.appendChild(link);
+                                const desc = document.createElement("p");
+                                desc.textContent = book.author_name ? `Author(s): ${book.author_name.join(', ')}` : '';
+                                li.appendChild(desc);
+                                searchResults.appendChild(li);
+                            });
+                        } else {
+                            const li = document.createElement("li");
+                            li.textContent = "No book results found.";
+                            searchResults.appendChild(li);
+                        }
+                    } catch (error) {
+                        console.error("Error fetching OpenLibrary results:", error);
+                        const li = document.createElement("li");
+                        li.textContent = "Error fetching OpenLibrary results.";
+                        searchResults.appendChild(li);
+                    }
+                }
+
+                if (USE_WIKIDATA) {
+                    try {
+                        const wikidataResponse = await fetch(`https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(query)}&language=en&format=json`);
+                        const wikidataData = await wikidataResponse.json();
+
+                        if (wikidataData.entities && Object.keys(wikidataData.entities).length > 0) {
+                            Object.values(wikidataData.entities).forEach(entity => {
+                                const li = document.createElement("li");
+                                const link = document.createElement("a");
+                                link.href = `https://www.wikidata.org/wiki/${entity.id}`;
+                                link.textContent = entity.label || entity.description || entity.id;
+                                li.appendChild(link);
+                                searchResults.appendChild(li);
+                            });
+                        } else {
+                            const li = document.createElement("li");
+                            li.textContent = "No Wikidata results found.";
+                            searchResults.appendChild(li);
+                        }
+                    } catch (error) {
+                        console.error("Error fetching Wikidata results:", error);
+                        const li = document.createElement("li");
+                        li.textContent = "Error fetching Wikidata results.";
+                        searchResults.appendChild(li);
+                    }
+                }
+
+                if (USE_DBPEDIA) {
+                    try {
+                        const dbpediaResponse = await fetch(`https://api.dbpedia-spotlight.org/en/annotate?text=${encodeURIComponent(query)}&confidence=0.5`);
+                        const dbpediaData = await dbpediaResponse.json();
+
+                        if (dbpediaData.Resources && dbpediaData.Resources.length > 0) {
+                            dbpediaData.Resources.forEach(resource => {
+                                const li = document.createElement("li");
+                                const link = document.createElement("a");
+                                link.href = resource["@URI"];
+                                link.textContent = resource["@surfaceForm"];
+                                li.appendChild(link);
+                                searchResults.appendChild(li);
+                            });
+                        } else {
+                            const li = document.createElement("li");
+                            li.textContent = "No DBpedia results found.";
+                            searchResults.appendChild(li);
+                        }
+                    } catch (error) {
+                        console.error("Error fetching DBpedia results:", error);
+                        const li = document.createElement("li");
+                        li.textContent = "Error fetching DBpedia results.";
+                        searchResults.appendChild(li);
+                    }
+                }
+            }
+        }
+
+        async function fetchMetaDescription(url) {
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                const metaTag = /<meta name="description" content="(.*?)"/i.exec(text);
+                return metaTag ? metaTag[1] : null;
+            } catch (error) {
+                console.error("Error fetching meta description:", error);
+                return null;
+            }
+        }
+
+    </script>
+    <center><br><br><big style="color:grey;font-size:16px;">Copyright  &#169; centle99@gmail.com 2024 All rights reserved.</big
+    ><br><big style="color:grey;font-size:8px;">Uses following free APIs: DuckDuckGo API, Wikipedia API, OpenLibrary API and
+    GDelt API </big></body>
+</html>
